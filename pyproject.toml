@@ -1,0 +1,22 @@
+[project]
+name = "sansar"
+version = "0.1.0"
+description = "A transformer as a neural game engine"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pygame",
+    "omegaconf",
+]
+
+[project.optional-dependencies]
+train = [
+    "torch",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,6 @@
+# Copy to configs/local.yaml (gitignored) and set machine-specific values.
+# Only include keys you want to override; everything else falls through to
+# default.yaml.
+
+runtime:
+  device: mps   # this machine's accelerator: cpu | mps | cuda

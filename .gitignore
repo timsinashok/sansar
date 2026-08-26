@@ -1,0 +1,20 @@
+# machine-specific config (device, paths) — never committed
+configs/local.yaml
+.env
+
+# run outputs
+experiments/
+data_out/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# editors / os
+.DS_Store
+.idea/
+.vscode/

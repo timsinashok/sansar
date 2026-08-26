@@ -1,0 +1,65 @@
+# Sansar default configuration.
+#
+# Committed defaults for every experiment. Machine-specific values (device,
+# data paths) go in configs/local.yaml (gitignored) — same structure, only the
+# keys you want to override. CLI overrides win over both:
+#     python scripts/play.py env.render_hz=50 runtime.device=cpu
+
+runtime:
+  device: auto        # auto | cpu | mps | cuda  (auto picks cuda > mps > cpu)
+  seed: 42
+
+env:
+  name: driving_v0
+  sim_hz: 50          # simulation frequency (fixed timestep)
+  render_hz: 50       # visualization frequency (decoupled from sim).
+                      # 10 Hz is the neural-demo target; at 10 the 2 m dash
+                      # pattern aliases at certain speeds and looks frozen.
+
+  road:
+    kind: straight    # straight | curved
+    half_width: 3.0   # meters, centerline to edge
+    # used only when kind == curved:
+    curve_amplitude: 1.5    # meters of lateral centerline sway
+    curve_wavelength: 80.0  # meters of travel per full sway cycle
+
+  car:
+    half_width: 0.4       # meters
+    half_length: 0.9      # meters, used for obstacle collision
+    initial_speed: 8.0    # m/s
+    max_speed: 20.0       # m/s
+    accel: 2.0            # m/s^2, passive acceleration toward max_speed
+    steer_rate: 2.5       # rad/s of heading change while steering
+    max_heading: 0.6      # rad, heading clamp
+    self_center_rate: 3.0 # rad/s heading decay toward straight when not
+                          # steering — quick arcade turns instead of a
+                          # steering wheel that stays turned forever
+    # collision behavior: car is clamped to the road edge and slowed,
+    # keeping episodes continuous (rich boundary data for training)
+    collision_speed_factor: 0.90   # per-step speed multiplier while scraping
+    collision_min_speed: 3.0       # m/s floor so the car never stalls
+
+  # Blockers on the road. Their layout is a deterministic function of
+  # (seed, distance) — static world geometry like the road itself, so the
+  # dynamic state the neural engine must predict stays just the car.
+  obstacles:
+    enabled: true
+    seed: 7
+    first_at: 60.0        # meters before the first blocker
+    spacing: 45.0         # mean meters between blockers
+    jitter: 20.0          # +/- meters of per-blocker spacing noise
+    half_width: 0.7       # meters
+    half_length: 0.8      # meters
+    edge_margin: 0.3      # meters kept clear between blocker and road edge
+    slow_factor: 0.85     # per-step speed multiplier while overlapping
+
+render:
+  window_width: 420
+  window_height: 640
+  pixels_per_meter: 40   # lateral world-to-screen scale
+
+data:
+  out_dir: data_out      # episode logs land here (gitignored)
+
+experiment:
+  out_dir: experiments   # checkpoints, logs, config snapshots (gitignored)
