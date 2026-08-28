@@ -27,7 +27,7 @@ env:
     half_width: 0.4       # meters
     half_length: 0.9      # meters, used for obstacle collision
     initial_speed: 8.0    # m/s
-    max_speed: 20.0       # m/s
+    max_speed: 13.9       # m/s (~50 km/h)
     accel: 2.0            # m/s^2, passive acceleration toward max_speed
     steer_rate: 2.5       # rad/s of heading change while steering
     max_heading: 0.6      # rad, heading clamp
@@ -60,6 +60,18 @@ render:
 
 data:
   out_dir: data_out      # episode logs land here (gitignored)
+  run_name: v0           # episodes saved to <out_dir>/<run_name>/
+  episodes: 200
+  steps: 3000            # per episode: 60 s of sim time at 50 Hz
+  seed: 123
+  # scripted driver mix (weights, normalized automatically). Coverage matters
+  # more than volume: the model must see boundaries, collisions, and the
+  # weird inputs a human player will produce.
+  policy_mix:
+    lane: 0.40           # noisy lane-following that dodges blockers (typical play)
+    random: 0.20         # sticky random actions (state-space coverage)
+    swerve: 0.20         # sinusoidal steering (dynamic-range coverage)
+    wall: 0.20           # deliberately hits walls/blockers, then recovers
 
 experiment:
   out_dir: experiments   # checkpoints, logs, config snapshots (gitignored)

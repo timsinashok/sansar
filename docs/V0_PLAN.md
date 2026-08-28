@@ -132,7 +132,8 @@ Training choices:
 ## Milestones
 
 - [x] **M1** — playable classic game behind the `Engine` interface
-- [ ] **M2** — data pipeline; ~1 M transitions from mixed policies
+- [x] **M2** — data pipeline; 600 k transitions from mixed policies
+      (`scripts/collect.py`, 12% collision steps, replay-exact determinism)
 - [ ] **M3** — transformer beats constant-velocity baseline at 1-step and 50-step
 - [ ] **M4** — playable neural game at 50 Hz; no collapse for 30+ s
 - [ ] **M5** — divergence-curve report + side-by-side demo
