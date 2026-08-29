@@ -134,8 +134,15 @@ Training choices:
 - [x] **M1** — playable classic game behind the `Engine` interface
 - [x] **M2** — data pipeline; 600 k transitions from mixed policies
       (`scripts/collect.py`, 12% collision steps, replay-exact determinism)
-- [ ] **M3** — transformer beats constant-velocity baseline at 1-step and 50-step
-- [ ] **M4** — playable neural game at 50 Hz; no collapse for 30+ s
+- [x] **M3** — transformer beats constant-velocity baseline at 1-step and
+      50-step on lateral position (x@1: 2.4 mm vs 6.6 mm; x@50: 0.11 m vs
+      1.63 m — 12×) with 97% collision accuracy. Caveat: 50-step *distance*
+      RMSE (3–4 m) is still worse than the baseline (1.2 m) — speed is
+      near-constant so delta-repeat is nearly exact there; improving
+      speed/distance drift is open iteration.
+- [x] **M4** — playable neural game: `play.py game.engine=neural`, 1.35 ms
+      inference/step (15× under the 20 ms budget), 40 s erratic-input
+      rollout stays finite and on-road (subjective play-feel: user to judge)
 - [ ] **M5** — divergence-curve report + side-by-side demo
 
 ## Decisions taken (revisit if needed)

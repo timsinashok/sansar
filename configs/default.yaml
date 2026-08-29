@@ -53,6 +53,11 @@ env:
     edge_margin: 0.3      # meters kept clear between blocker and road edge
     slow_factor: 0.85     # per-step speed multiplier while overlapping
 
+game:
+  engine: classic          # classic | neural
+  checkpoint: experiments/m3/model.pt   # used when engine == neural
+  neural_device: cpu       # single-step inference is latency-bound; cpu wins
+
 render:
   window_width: 420
   window_height: 640
@@ -72,6 +77,30 @@ data:
     random: 0.20         # sticky random actions (state-space coverage)
     swerve: 0.20         # sinusoidal steering (dynamic-range coverage)
     wall: 0.20           # deliberately hits walls/blockers, then recovers
+
+model:
+  context: 32            # past (state, action) steps the transformer sees (0.64 s)
+  d_model: 128
+  n_layers: 4
+  n_heads: 4
+  dropout: 0.0
+
+train:
+  run_name: m3
+  data_run: v0           # dataset under data.out_dir to train on
+  val_episodes: 20       # last N episodes held out for validation
+  batch_size: 256
+  lr: 3e-4
+  weight_decay: 0.01
+  steps: 6000            # optimizer steps
+  # pushforward rollout curriculum: [optimizer_step, rollout_k]. Training
+  # rolls the model on its own (detached) predictions for k steps so it
+  # learns to correct compounding error — the long-horizon stability trick.
+  rollout_curriculum: [[0, 1], [2000, 4], [4000, 8]]
+  collision_loss_weight: 1.0
+  eval_every: 500
+  eval_horizon: 50       # rollout length for validation metrics
+  eval_windows: 256
 
 experiment:
   out_dir: experiments   # checkpoints, logs, config snapshots (gitignored)
