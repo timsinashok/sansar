@@ -55,7 +55,7 @@ env:
 
 game:
   engine: classic          # classic | neural
-  checkpoint: experiments/m3/model.pt   # used when engine == neural
+  checkpoint: experiments/m3_long/model.pt   # used when engine == neural
   neural_device: cpu       # single-step inference is latency-bound; cpu wins
 
 render:
