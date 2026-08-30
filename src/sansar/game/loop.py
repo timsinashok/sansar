@@ -56,3 +56,44 @@ def run(cfg: DictConfig, engine: Engine, title: str = "sansar — classic engine
         clock.tick(sim_hz)
 
     renderer.close()
+
+
+def run_duel(cfg: DictConfig, neural: Engine, truth: Engine) -> None:
+    """Side-by-side mode: the neural engine is the game (solid car, camera),
+    the classic engine runs the same inputs as ground truth (outline ghost).
+    The gap between them IS the divergence, live on screen."""
+    sim_hz = int(cfg.env.sim_hz)
+    steps_per_frame = max(1, sim_hz // int(cfg.env.render_hz))
+
+    road = Road(cfg.env.road)
+    obstacles = Obstacles(cfg.env.obstacles, road)
+    renderer = PygameRenderer(
+        cfg.render, road, obstacles, float(cfg.env.car.half_width),
+        "sansar — duel: neural (solid) vs classic ghost",
+    )
+    clock = pygame.time.Clock()
+
+    ns, ts = neural.reset(), truth.reset()
+    step = 0
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                elif event.key == pygame.K_r:
+                    ns, ts = neural.reset(), truth.reset()
+                    step = 0
+
+        action = _read_action()
+        ns = neural.step(ns, action)
+        ts = truth.step(ts, action)
+        step += 1
+        if step % steps_per_frame == 0:
+            gap = f"drift  x {abs(ns.x - ts.x):5.2f} m   dist {abs(ns.distance - ts.distance):5.2f} m"
+            renderer.draw(ns, ghost=ts, hud_extra=gap)
+        clock.tick(sim_hz)
+
+    renderer.close()

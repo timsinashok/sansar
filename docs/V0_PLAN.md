@@ -143,7 +143,19 @@ Training choices:
 - [x] **M4** — playable neural game: `play.py game.engine=neural`, 1.35 ms
       inference/step (15× under the 20 ms budget), 40 s erratic-input
       rollout stays finite and on-road (subjective play-feel: user to judge)
-- [ ] **M5** — divergence-curve report + side-by-side demo
+- [x] **M5** — divergence report (`scripts/eval.py` → per-horizon RMSE table,
+      JSON, and figure in the checkpoint dir) + duel mode
+      (`play.py game.mode=duel`: neural solid car, classic ground-truth ghost,
+      identical inputs, live drift HUD). Headline numbers at 1000 steps
+      (20 s open-loop): lateral 0.75 m vs 30.8 m baseline (41×), heading
+      0.043 vs 38 rad, 93.6% collision accuracy; distance crosses below the
+      baseline beyond ~200 steps (22.0 m vs 32.7 m at 1000) but remains the
+      weakest axis at short horizons.
+
+**V0 is complete** — the loop from the core idea is closed: classic game →
+trajectories → latent dynamics transformer → playable neural game, with
+quantified long-horizon divergence. Next frontiers (V0.5): recurrent-latent
+architecture (architecture B) and the persistent-state gate experiment.
 
 ## Decisions taken (revisit if needed)
 

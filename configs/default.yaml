@@ -54,7 +54,8 @@ env:
     slow_factor: 0.85     # per-step speed multiplier while overlapping
 
 game:
-  engine: classic          # classic | neural
+  mode: play               # play | duel (neural solid car vs classic ghost, same inputs)
+  engine: classic          # classic | neural (play mode only; duel always runs both)
   checkpoint: experiments/m3_long/model.pt   # used when engine == neural
   neural_device: cpu       # single-step inference is latency-bound; cpu wins
 

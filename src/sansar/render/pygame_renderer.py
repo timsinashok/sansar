@@ -19,6 +19,7 @@ DASH = (120, 124, 130)
 BLOCK = (90, 140, 235)
 CAR = (235, 90, 70)
 CAR_HIT = (255, 200, 60)
+GHOST = (180, 235, 190)
 HUD = (200, 203, 208)
 
 
@@ -46,7 +47,7 @@ class PygameRenderer:
     def _to_screen_x(self, world_x: float) -> int:
         return int(self.w / 2 + world_x * self.ppm)
 
-    def draw(self, state: CarState) -> None:
+    def draw(self, state: CarState, ghost: CarState | None = None, hud_extra: str = "") -> None:
         self.screen.fill(BG)
 
         # road edges: sample world distance per screen row, car pinned at car_screen_y
@@ -97,15 +98,25 @@ class PygameRenderer:
             )
             pygame.draw.rect(self.screen, BLOCK, rect, border_radius=3)
 
-        # car
+        # cars: camera follows `state`; the ghost (ground truth in duel mode)
+        # is drawn as an outline at its position relative to this frame
         car_w = int(2 * self.car_half_width * self.ppm)
         car_h = int(car_w * 1.8)
+        if ghost is not None:
+            grect = pygame.Rect(0, 0, car_w, car_h)
+            grect.center = (
+                self._to_screen_x(ghost.x),
+                int(self.car_screen_y - (ghost.distance - state.distance) * self.ppm),
+            )
+            pygame.draw.rect(self.screen, GHOST, grect, width=2, border_radius=4)
         rect = pygame.Rect(0, 0, car_w, car_h)
         rect.center = (self._to_screen_x(state.x), self.car_screen_y)
         pygame.draw.rect(self.screen, CAR_HIT if state.collided else CAR, rect, border_radius=4)
 
         hud = f"dist {state.distance:7.1f} m   speed {state.speed * 3.6:5.1f} km/h"
         self.screen.blit(self.font.render(hud, True, HUD), (12, 10))
+        if hud_extra:
+            self.screen.blit(self.font.render(hud_extra, True, HUD), (12, 30))
 
         pygame.display.flip()
 
