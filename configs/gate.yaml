@@ -1,0 +1,78 @@
+# V0.5 gate experiment. Layered on top of configs/default.yaml.
+#
+#   python scripts/gate_run.py                 # full sweep
+#   python scripts/gate_run.py sweep.gaps=[64,256]
+#
+# Car dynamics are inherited from default.yaml unchanged, so gate results are
+# comparable to V0 and not confounded by a different vehicle model.
+
+env:
+  name: driving_gate
+  car:
+    initial_speed: 13.9   # start AT cruise: with no acceleration phase the
+                          # pad->gate gap in steps is set by geometry alone,
+                          # so G is a controlled variable rather than a
+                          # by-product of how fast the car happened to be going
+  road:
+    kind: straight        # the gate env is always straight: a curved road
+                          # would let centreline phase leak trial identity
+  obstacles:
+    enabled: false        # OFF by design: blockers would let the two pad
+                          # routes differ in speed, an information channel
+                          # that is not the one under test
+  gate:
+    pad_distance: 30.0    # m: short, since the car already starts at cruise
+    pad_jitter_m: 8.0     # m of per-trial pad/gate placement jitter
+    approach_m: 25.0      # m before the pad line spent steering to a side
+    pad_offset: 1.8       # m from centreline of the pad-side target
+    steer_noise: 0.6      # rad/s of heading process noise. NOT realism: with
+                          # deterministic dynamics the float value of x is a
+                          # hash of the whole trajectory and a 1-step model
+                          # reads the hidden bit out of it (measured 0.73 on a
+                          # task whose ceiling is 0.50). Noise makes the
+                          # state map many-to-one, destroying that channel.
+    wander_period: 40     # steps between random lane-target resamples
+    half_length: 1.0      # m: gate depth
+    slow_factor: 0.5      # speed multiplier when the gate is CLOSED
+    margin_m: 15.0        # m of driving recorded past the gate
+
+sweep:
+  # Gaps used for the headline memory sweep. Restricted to the regime the
+  # leak curve certifies clean (see stage 1): below ~128 steps the pad-side
+  # excursion is still decaying inside a 32-step window.
+  gaps: [128, 256, 512, 1024]
+  # Gaps swept by the leak curve itself, including the dirty ones — showing
+  # where the benchmark is invalid is part of the result.
+  leak_gaps: [16, 32, 64, 128, 256, 512, 1024]
+  # H1 is tested by varying the model's window at a fixed, clean gap.
+  context_gap: 256
+  contexts: [8, 32, 64, 128, 256, 320]
+  stability_horizon: 1000
+  models: [memoryless, mlp, transformer, gru]
+  seeds: [0, 1, 2]
+  train_trials: 1500
+  eval_trials: 500
+
+gate_model:
+  context: 32           # window length for memoryless(1)/mlp/transformer
+  d_model: 128
+  n_layers: 4
+  n_heads: 4
+  mlp_hidden: 512
+  gru_hidden: 256
+  gru_layers: 2
+  dropout: 0.0
+
+gate_train:
+  steps: 600
+  batch_size: 128
+  lr: 3e-4
+  weight_decay: 0.01
+  collision_loss_weight: 4.0   # the gate readout is the collision head
+  gate_sample_frac: 0.5        # half of each batch is anchored on t_hit, so
+                               # the readout is actually trained (gate steps
+                               # are ~0.1% of a trial otherwise)
+  gru_batch: 64          # recurrent path sees whole trials, so a smaller
+                         # batch keeps long-gap steps affordable
+  gate_step_weight: 40.0 # upweight of the gate step inside a full-trial pass
+  eval_every: 250
